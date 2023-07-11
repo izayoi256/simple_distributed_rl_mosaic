@@ -1,8 +1,7 @@
 import logging
 import pickle
-import string
 from dataclasses import dataclass
-from typing import Any, Tuple, Union
+from typing import Any, Tuple
 
 import numpy as np
 
@@ -51,11 +50,11 @@ class Mosaic(TurnBase2Player):
 
     @property
     def observation_space(self) -> BoxSpace:
-        return BoxSpace(shape=(3, self.size, self.size, self.size), low=0, high=1)
+        return BoxSpace(shape=(self.size, self.size, self.size), low=0, high=1)
 
     @property
     def observation_type(self) -> EnvObservationTypes:
-        return EnvObservationTypes.DISCRETE
+        return EnvObservationTypes.SHAPE3
 
     @property
     def max_episode_steps(self) -> int:
@@ -70,11 +69,13 @@ class Mosaic(TurnBase2Player):
         return self.observe(), self.additional_info()
 
     def observe(self) -> np.ndarray:
-        return np.array([
-            self.observe_single_board(self.size, self.game.first_board),
-            self.observe_single_board(self.size, self.game.second_board),
-            self.observe_single_board(self.size, self.game.legal_board),
-        ], dtype=np.uint8)
+        first_board = self.observe_single_board(self.size, self.game.first_board)
+        second_board = self.observe_single_board(self.size, self.game.second_board)
+        legal_board = self.observe_single_board(self.size, self.game.legal_board)
+        result = legal_board - 1
+        result[first_board == 1] = 1
+        result[second_board == 2] = 2
+        return result
 
     def additional_info(self) -> dict:
         return {

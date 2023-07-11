@@ -127,15 +127,17 @@ class Game:
         return None if self.moves_made == 0 else self.get_move(self.moves_made - 1)
 
 
-for p in os.environ['PATH'].split(os.pathsep):
-    if os.path.isdir(p):
-        os.add_dll_directory(p)
-os.add_dll_directory(os.path.dirname(__file__))
+is_windows = os.name == 'nt'
+
+if is_windows:
+    for p in os.environ['PATH'].split(os.pathsep):
+        if os.path.isdir(p):
+            os.add_dll_directory(p)
+    os.add_dll_directory(os.path.dirname(__file__))
 
 
 def load_library():
-    is_windows = os.name == 'nt'
-    path = 'libmosaicgame.dll' if is_windows else os.path.join(os.path.dirname(__file__), 'libmosaicgame.dll')
+    path = 'libmosaicgame.dll' if is_windows else os.path.join(os.path.dirname(__file__), 'libmosaicgame.so')
     lib = cdll.LoadLibrary(path)
     lib.create.argtypes = (c_uint8,)
     lib.create.restype = c_void_p
